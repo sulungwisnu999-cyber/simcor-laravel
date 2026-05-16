@@ -9,8 +9,12 @@ RUN apt-get update && apt-get install -y \
 
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-RUN composer create-project laravel/laravel . --no-interaction
+# Create Laravel in temp dir to avoid "directory not empty" error
+RUN COMPOSER_ALLOW_SUPERUSER=1 composer create-project laravel/laravel /tmp/laravel-base --no-interaction \
+    && cp -r /tmp/laravel-base/. /var/www/ \
+    && rm -rf /tmp/laravel-base
 
+# Copy SIMCOR files over Laravel base
 COPY app/ app/
 COPY database/ database/
 COPY resources/ resources/
